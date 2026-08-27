@@ -89,7 +89,6 @@ package body Unrestricted_Algorithms is
    function Inverse_Recursive (N : Positive; Precision : Positive) return Digit_Array is
       Result : Digit_Array(1 .. Precision + 1) := (others => 0);
 
-      -- FIXED: Changed parameter name from "Rem" (reserved word) to "Curr_Rem"
       procedure Process_Digit (Index : Positive; Curr_Rem : Integer) is
       begin
          if Index > Precision + 1 then
@@ -114,29 +113,38 @@ package body Unrestricted_Algorithms is
    -- Core: Unrestricted Algorithm for Euler's Number
    -----------------------------------------------------
    function Compute_E (Precision : Positive) return Digit_Array is
-      Size    : constant Positive := Precision + 1;
-      Sum     : Digit_Array(1 .. Size) := (others => 0);
-      Term    : Digit_Array(1 .. Size) := (others => 0);
-      Zero    : constant Digit_Array(1 .. Size) := (others => 0);
-      Divisor : Positive := 1;
+      -- FIXED: Added internal guard digits. Unbounded Taylor Series requires calculation
+      -- at a slightly deeper precision than requested to prevent rounding/truncation 
+      -- losses from bubbling up into the final targeted decimal space.
+      Internal_Size : constant Positive := Precision + 8;
+      Internal_Sum  : Digit_Array(1 .. Internal_Size) := (others => 0);
+      Term          : Digit_Array(1 .. Internal_Size) := (others => 0);
+      Zero          : constant Digit_Array(1 .. Internal_Size) := (others => 0);
+      Divisor       : Positive := 1;
+      
+      Result        : Digit_Array(1 .. Precision + 1);
    begin
       -- Base state: 1.000...
-      Sum(1)  := 1; 
-      Term(1) := 1; 
+      Internal_Sum(1) := 1; 
+      Term(1)       := 1; 
 
       -- Taylor Series: sum from i=1 to infinity of (Term / i!)
       loop
          Term := Divide_By_Integer(Term, Divisor);
          
-         -- Halt unbounded condition: Stop when addition yields no difference 
-         -- within our requested precision space.
+         -- Halt unbounded condition
          exit when Is_Equal(Term, Zero);
          
-         Sum := Add(Sum, Term);
+         Internal_Sum := Add(Internal_Sum, Term);
          Divisor := Divisor + 1;
       end loop;
       
-      return Sum;
+      -- Slice off the extra guard digits to return only the requested precision bounds
+      for I in Result'Range loop
+         Result(I) := Internal_Sum(I);
+      end loop;
+      
+      return Result;
    end Compute_E;
 
    -----------------------------------------------------
