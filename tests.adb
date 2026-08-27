@@ -82,7 +82,7 @@ begin
    Put_Line("TEST 8 - Array Addition (No Carry)");
    declare
       A : Digit_Array(1..3) := (1=>1, 2=>2, 3=>3);
-      B : Digit_Array(1..3) := (1=>2, 2=>3, 3=>4); -- Fixed index bounds mapping
+      B : Digit_Array(1..3) := (1=>2, 2=>3, 3=>4); 
       S : Digit_Array := Add(A, B);
    begin
       Put_Line("  8.1 Assert 1.23 + 2.34 = 3.57");
@@ -136,15 +136,13 @@ begin
    Put_Line("  12.1 Assert compiler type constraint prevents 0 precision (Natural vs Positive)");
    begin
       declare
-         -- Assigned dynamically to bypass the GNAT static compile-time warning,
-         -- allowing the runtime Constraint_Error exception to be properly tested.
-         Invalid_Precision : Integer := 0;
+         -- FIXED: Suppressing GNAT static analysis warnings so we can actually 
+         -- test the runtime Constraint_Error handling per V&V requirements.
+         pragma Warnings (Off);
+         Result : Digit_Array := Compute_E(0);
+         pragma Warnings (On);
       begin
-         declare
-            Result : Digit_Array := Compute_E(Invalid_Precision);
-         begin
-            Assert (False, "Should not be able to execute with 0 precision natively");
-         end;
+         Assert (False, "Should not be able to execute with 0 precision natively");
       end;
    exception
       when Constraint_Error =>
