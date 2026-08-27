@@ -136,8 +136,6 @@ begin
    Put_Line("  12.1 Assert compiler type constraint prevents 0 precision (Natural vs Positive)");
    begin
       declare
-         -- FIXED: Suppressing GNAT static analysis warnings so we can actually 
-         -- test the runtime Constraint_Error handling per V&V requirements.
          pragma Warnings (Off);
          Result : Digit_Array := Compute_E(0);
          pragma Warnings (On);
@@ -155,7 +153,9 @@ begin
       E : Digit_Array := Compute_E(10);
    begin
       Put_Line("  13.1 Assert 10th decimal space computation aligns mathematically");
-      Assert (E(6) = 2 and E(7) = 8 and E(8) = 1 and E(9) = 8 and E(10) = 2, "Deep e failed");
+      -- FIXED: The transcription of the actual decimals of `e` was inaccurate in the 
+      -- initial test file. e = 2.7182818284... (Decimals 5 through 9 correspond to Indices 6..10)
+      Assert (E(6) = 8 and E(7) = 1 and E(8) = 8 and E(9) = 2 and E(10) = 8, "Deep e failed");
       Put_Line("      PASS");
    end;
 
