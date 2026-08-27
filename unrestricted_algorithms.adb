@@ -89,18 +89,19 @@ package body Unrestricted_Algorithms is
    function Inverse_Recursive (N : Positive; Precision : Positive) return Digit_Array is
       Result : Digit_Array(1 .. Precision + 1) := (others => 0);
 
-      procedure Process_Digit (Index : Positive; Rem : Integer) is
+      -- FIXED: Changed parameter name from "Rem" (reserved word) to "Curr_Rem"
+      procedure Process_Digit (Index : Positive; Curr_Rem : Integer) is
       begin
          if Index > Precision + 1 then
             return; -- Base Case: Target precision reached
          end if;
          
          if Index = 1 then
-            Result(Index) := Digit(Rem / N);
-            Process_Digit(Index + 1, (Rem mod N) * 10);
+            Result(Index) := Digit(Curr_Rem / N);
+            Process_Digit(Index + 1, (Curr_Rem mod N) * 10);
          else
-            Result(Index) := Digit(Rem / N);
-            Process_Digit(Index + 1, (Rem mod N) * 10);
+            Result(Index) := Digit(Curr_Rem / N);
+            Process_Digit(Index + 1, (Curr_Rem mod N) * 10);
          end if;
       end Process_Digit;
 
